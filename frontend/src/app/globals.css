@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  /* Customer store (NEXORA) */
+  --color-ink: #0B0D14;
+  --color-paper: #FAFBFC;
+  --color-volt: #2563EB;
+  --color-volt-dark: #1D4ED8;
+  --color-mango: #22D3EE;
+  --color-coral: #EF4444;
+
+  /* Admin portal (NEXORA) */
+  --color-nexora-bg: #0B0D14;
+  --color-nexora-surface: #131620;
+  --color-nexora-border: #232838;
+  --color-nexora-text: #F4F5F7;
+  --color-nexora-muted: #9096A8;
+  --color-nexora-primary: #6D5EF5;
+  --color-nexora-cyan: #22D3EE;
+  --color-nexora-success: #10B981;
+  --color-nexora-warning: #F59E0B;
+  --color-nexora-danger: #EF4444;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}

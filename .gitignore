@@ -1,0 +1,20 @@
+﻿venv/
+backend/venv/
+frontend/node_modules/
+frontend/.next/
+.env
+__pycache__/
+*.pyc
+*.backup*
+ecommerce_backup.dump
+ecommerce_backup.sql
+build_error.log
+restore_log.txt
+patch_tools.py
+patch_tools2.py
+patch_agent_audit.py
+backend/uploads/
+
+# scratch/test files
+backend/*.json
+backend/installed_packages.txt
