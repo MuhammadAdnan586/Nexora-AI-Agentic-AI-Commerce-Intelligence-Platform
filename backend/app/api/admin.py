@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+﻿from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.core.deps import get_db, require_role
@@ -465,6 +465,7 @@ def decide_promotion(
     if decision == "approve":
         product = db.query(Product).filter(Product.id == promo.product_id).first()
         if product:
+            product.compare_at_price = product.price
             product.price = round(product.price * (1 - promo.discount_percent / 100), 2)
 
         campaign = Campaign(
@@ -759,7 +760,7 @@ def process_return(
                 notification = WarehouseNotification(
                     warehouse_id=order.warehouse_id,
                     order_id=order.id,
-                    message=f"Return approved for order #{order.id} — expect {item.quantity}x {product.name if product else 'item'} back in stock.",
+                    message=f"Return approved for order #{order.id} â€” expect {item.quantity}x {product.name if product else 'item'} back in stock.",
                 )
                 db.add(notification)
     else:
@@ -905,7 +906,7 @@ def assign_warehouse(
     notification = WarehouseNotification(
         warehouse_id=warehouse.id,
         order_id=order.id,
-        message=f"New order #{order.id} assigned — please prepare for shipping. Total: ${order.total_amount:.2f}",
+        message=f"New order #{order.id} assigned â€” please prepare for shipping. Total: ${order.total_amount:.2f}",
     )
     db.add(notification)
     db.commit()
@@ -967,7 +968,7 @@ def assign_warehouse_partial(
     notification = WarehouseNotification(
         warehouse_id=warehouse.id,
         order_id=order.id,
-        message=f"New order #{order.id} — please prepare: {', '.join(item_names)}.",
+        message=f"New order #{order.id} â€” please prepare: {', '.join(item_names)}.",
     )
     db.add(notification)
     db.commit()

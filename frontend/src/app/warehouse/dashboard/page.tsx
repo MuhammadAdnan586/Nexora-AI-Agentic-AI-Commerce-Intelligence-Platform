@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -49,6 +49,13 @@ interface ChatMessage {
   attachment_name: string | null;
   created_at: string;
 }
+interface Conversation {
+  order_id: number;
+  shipping_address: string | null;
+  last_message: string;
+  last_message_at: string;
+  unread: boolean;
+}
 const statusOptions = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
 
 const statusColor = (status: string) => {
@@ -65,7 +72,8 @@ export default function WarehouseDashboard() {
   const [stock, setStock] = useState<StockItem[]>([]);
   const [orders, setOrders] = useState<WarehouseOrder[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [tab, setTab] = useState<"orders" | "stock" | "notifications">("orders");
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [tab, setTab] = useState<"orders" | "stock" | "notifications" | "messages">("orders");
   const [chatOrderId, setChatOrderId] = useState<number | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -73,16 +81,18 @@ export default function WarehouseDashboard() {
 
   const loadAll = async () => {
     try {
-      const [infoRes, stockRes, ordersRes, notifRes] = await Promise.all([
+      const [infoRes, stockRes, ordersRes, notifRes, convoRes] = await Promise.all([
         warehouseApi.get("/warehouse-portal/me"),
         warehouseApi.get("/warehouse-portal/stock"),
         warehouseApi.get("/warehouse-portal/orders"),
         warehouseApi.get("/warehouse-portal/notifications"),
+        warehouseApi.get("/warehouse-portal/messages/conversations"),
       ]);
       setInfo(infoRes.data);
       setStock(stockRes.data);
       setOrders(ordersRes.data);
       setNotifications(notifRes.data);
+      setConversations(convoRes.data);
     } catch {
       router.push("/warehouse/login");
     } finally {
@@ -108,6 +118,7 @@ export default function WarehouseDashboard() {
     setChatOrderId(orderId);
     const res = await warehouseApi.get(`/warehouse-portal/orders/${orderId}/messages`);
     setChatMessages(res.data);
+    loadAll();
   };
 
   const sendMessage = async () => {
@@ -116,6 +127,7 @@ export default function WarehouseDashboard() {
     setChatInput("");
     const res = await warehouseApi.get(`/warehouse-portal/orders/${chatOrderId}/messages`);
     setChatMessages(res.data);
+    loadAll();
   };
 
   const logout = () => {
@@ -126,6 +138,7 @@ export default function WarehouseDashboard() {
   const pendingNotifCount = notifications.filter((n) => n.status === "pending").length;
   const pendingOrdersCount = orders.filter((o) => o.status === "pending" || o.status === "confirmed").length;
   const lowStockCount = stock.filter((s) => s.quantity <= s.reorder_level).length;
+  const unreadMessagesCount = conversations.filter((c) => c.unread).length;
 
   if (loading) {
     return (
@@ -144,7 +157,7 @@ export default function WarehouseDashboard() {
           <img src="/logo.jpg" alt="NEXORA" width={38} height={38} className="rounded-lg object-cover" />
           <div>
             <p className="font-display font-bold text-sm leading-tight">NEXORA <span className="text-nexora-muted font-normal">Warehouse</span></p>
-            <p className="text-xs text-nexora-muted leading-tight">{info?.warehouse_name} — {info?.city}</p>
+            <p className="text-xs text-nexora-muted leading-tight">{info?.warehouse_name} - {info?.city}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -214,6 +227,17 @@ export default function WarehouseDashboard() {
           {pendingNotifCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-nexora-danger text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
               {pendingNotifCount}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab("messages")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium relative transition-colors ${tab === "messages" ? "bg-nexora-primary text-white" : "text-nexora-muted hover:text-nexora-text"}`}
+        >
+          <MessageSquare size={16} /> Messages
+          {unreadMessagesCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-nexora-danger text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+              {unreadMessagesCount}
             </span>
           )}
         </button>
@@ -333,6 +357,36 @@ export default function WarehouseDashboard() {
             })()}
           </div>
         )}
+
+        {tab === "messages" && (
+          <div className="space-y-3 max-w-5xl">
+            {conversations.length === 0 ? (
+              <p className="text-nexora-muted text-sm">No messages yet.</p>
+            ) : (
+              conversations.map((c) => (
+                <button
+                  key={c.order_id}
+                  onClick={() => openChat(c.order_id)}
+                  className="w-full text-left bg-nexora-surface border border-nexora-border rounded-2xl p-4 flex items-center justify-between hover:border-nexora-primary transition-colors"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-mono font-bold">Order #{c.order_id}</p>
+                      {c.unread && (
+                        <span className="bg-nexora-danger text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">New</span>
+                      )}
+                    </div>
+                    {c.shipping_address && (
+                      <p className="text-xs text-nexora-muted truncate">{c.shipping_address}</p>
+                    )}
+                    <p className="text-sm text-nexora-muted truncate mt-1">{c.last_message}</p>
+                  </div>
+                  <p className="text-xs text-nexora-muted shrink-0 ml-3">{new Date(c.last_message_at).toLocaleString()}</p>
+                </button>
+              ))
+            )}
+          </div>
+        )}
       </main>
 
       {chatOrderId && (
@@ -342,7 +396,7 @@ export default function WarehouseDashboard() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-5 py-4 border-b border-nexora-border flex items-center justify-between">
-              <h2 className="font-display font-bold">Order #{chatOrderId} — Chat</h2>
+              <h2 className="font-display font-bold">Order #{chatOrderId} - Chat</h2>
               <button onClick={() => setChatOrderId(null)} className="text-nexora-muted"><X size={18} /></button>
             </div>
             <div className="p-5 space-y-3 max-h-72 overflow-y-auto">

@@ -35,7 +35,9 @@
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET}
       - ENVIRONMENT=production
+      - FRONTEND_URL=http://localhost:3002
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
       - LANGCHAIN_TRACING_V2=${LANGCHAIN_TRACING_V2:-false}
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY:-}
       - LANGCHAIN_PROJECT=nexora-agentic-ai

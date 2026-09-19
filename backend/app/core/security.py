@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 import os
+import secrets
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,6 +11,7 @@ SECRET_KEY = os.getenv("JWT_SECRET")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 REFRESH_TOKEN_EXPIRE_DAYS = 7
+RESET_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -41,3 +43,14 @@ def decode_token(token: str):
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         return None
+
+
+# --- Forgot / Reset Password ---
+
+def generate_reset_token() -> str:
+    """Generates a URL-safe, random token for password reset links."""
+    return secrets.token_urlsafe(32)
+
+
+def get_reset_token_expiry() -> datetime:
+    return datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)

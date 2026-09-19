@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 @theme {
   /* Customer store (NEXORA) */
@@ -26,4 +26,13 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-body);
+}
+@theme {
+  /* Premium futuristic homepage tokens */
+  --color-nova-bg: #06070C;
+  --color-nova-bg2: #0A0E17;
+  --color-nova-cyan: #22D3EE;
+  --color-nova-violet: #6D5EF5;
+  --color-nova-text: #F4F5F7;
+  --color-nova-muted: #8A90A6;
 }

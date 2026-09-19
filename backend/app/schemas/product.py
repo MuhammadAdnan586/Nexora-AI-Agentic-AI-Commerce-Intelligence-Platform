@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
@@ -50,6 +50,7 @@ class ProductResponse(BaseModel):
     description: Optional[str] = None
     category_id: Optional[int] = None
     price: float
+    compare_at_price: Optional[float] = None
     is_active: bool
     image_url: Optional[str] = None
     images: List[ProductImageResponse] = []

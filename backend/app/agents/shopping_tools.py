@@ -1,3 +1,4 @@
+import re
 from langchain_core.tools import tool
 from app.core.database import SessionLocal
 from app.models.product import Product
@@ -7,34 +8,85 @@ from app.models.order import Order, OrderStatus
 from app.models.order_item import OrderItem
 
 
-def build_shopping_tools(user_id: int):
-    """Build cart/order tools bound to a specific logged-in customer."""
+def _normalize(text: str) -> str:
+    """Lowercase and strip everything except letters/digits, so 'Smart Watch' and 'smartwatch' match."""
+    return re.sub(r"[^a-z0-9]", "", (text or "").lower())
+
+
+def build_shopping_tools(user_id: int, found_products: list | None = None):
+    """Build cart/order tools bound to a specific logged-in customer.
+
+    `found_products` is an optional mutable list that search-style tools
+    will append matched product IDs to, so the API layer can return
+    structured product data alongside the natural-language reply.
+    """
+    if found_products is None:
+        found_products = []
 
     @tool
     def search_products(query: str) -> str:
-        """Search for products by name or keyword, including any active discount/promotion on them. Use this to find products the customer might want."""
+        """Search for products by name, category, or keyword, including any active discount/promotion on them. Use this whenever the customer names or describes a specific product."""
         db = SessionLocal()
         try:
             from app.models.promotion import Promotion, PromotionStatus
 
-            products = db.query(Product).filter(
-                Product.name.ilike(f"%{query}%"), Product.is_active == True
-            ).limit(5).all()
-            if not products:
-                products = db.query(Product).filter(Product.is_active == True).limit(5).all()
-            if not products:
-                return "No products found in the store right now."
+            query_norm = _normalize(query)
+            query_words = [w for w in re.split(r"\s+", query.lower().strip()) if len(w) >= 3]
+
+            all_products = db.query(Product).filter(Product.is_active == True).all()
+
+            def matches(p: Product) -> bool:
+                name_norm = _normalize(p.name)
+                desc_norm = _normalize(p.description)
+                if query_norm and (query_norm in name_norm or query_norm in desc_norm):
+                    return True
+                name_lower = p.name.lower()
+                desc_lower = (p.description or "").lower()
+                return any(w in name_lower or w in desc_lower for w in query_words)
+
+            matched = [p for p in all_products if matches(p)][:5]
+
+            if not matched:
+                return (
+                    f"No products matching '{query}' were found in the catalog. "
+                    "Politely tell the customer this and ask if they'd like to see something else, "
+                    "without listing unrelated products."
+                )
 
             lines = []
-            for p in products:
+            for p in matched:
                 promo = db.query(Promotion).filter(
                     Promotion.product_id == p.id, Promotion.status == PromotionStatus.approved
                 ).first()
-                line = f"- {p.name} (id: {p.id}): ${p.price:.2f} — {p.description or 'no description'}"
+                line = f"- {p.name} (id: {p.id}): ${p.price:.2f} - {p.description or 'no description'}"
                 if promo:
                     line += f" [ACTIVE PROMOTION: {promo.discount_percent}% off!]"
                 lines.append(line)
+                found_products.append(p.id)
             return "\n".join(lines)
+        finally:
+            db.close()
+
+    @tool
+    def get_discounted_products() -> str:
+        """List products that currently have an active discount or promotion. Use this whenever the customer asks about deals, discounts, sales, or offers."""
+        db = SessionLocal()
+        try:
+            from app.models.promotion import Promotion, PromotionStatus
+
+            promos = db.query(Promotion).filter(Promotion.status == PromotionStatus.approved).limit(10).all()
+            if not promos:
+                return "There are no active discounts right now."
+
+            lines = []
+            for promo in promos:
+                p = db.query(Product).filter(Product.id == promo.product_id, Product.is_active == True).first()
+                if not p:
+                    continue
+                lines.append(f"- {p.name} (id: {p.id}): ${p.price:.2f} - {promo.discount_percent}% off!")
+                found_products.append(p.id)
+
+            return "\n".join(lines) if lines else "There are no active discounts right now."
         finally:
             db.close()
 
@@ -63,6 +115,7 @@ def build_shopping_tools(user_id: int):
             else:
                 db.add(CartItem(cart_id=cart.id, product_id=product_id, quantity=quantity))
             db.commit()
+            found_products.append(product_id)
             return f"Added {quantity}x {product.name} (${product.price:.2f} each) to the cart."
         finally:
             db.close()
@@ -82,7 +135,8 @@ def build_shopping_tools(user_id: int):
                 if product:
                     subtotal = product.price * item.quantity
                     total += subtotal
-                    lines.append(f"{item.quantity}x {product.name} — ${subtotal:.2f}")
+                    lines.append(f"{item.quantity}x {product.name} - ${subtotal:.2f}")
+                    found_products.append(product.id)
             lines.append(f"Total: ${total:.2f}")
             return "\n".join(lines)
         finally:
@@ -130,4 +184,4 @@ def build_shopping_tools(user_id: int):
         finally:
             db.close()
 
-    return [search_products, add_to_cart, view_cart, place_order]
+    return [search_products, get_discounted_products, add_to_cart, view_cart, place_order]

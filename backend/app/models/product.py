@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text
+﻿from sqlalchemy import Column, Integer, String, Float, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -16,6 +16,7 @@ class Product(Base):
     category = relationship("Category", back_populates="products")
     images = relationship("ProductImage", order_by="ProductImage.sort_order", cascade="all, delete-orphan")
     price = Column(Float, nullable=False)
+    compare_at_price = Column(Float, nullable=True)
     cost_price = Column(Float, nullable=True)
     
     image_url = Column(String, nullable=True)
