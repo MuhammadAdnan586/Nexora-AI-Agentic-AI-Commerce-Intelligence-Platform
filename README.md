@@ -10,6 +10,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](#)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#)
 
+[Live Demo](#) · [Report Bug](https://github.com/MuhammadAdnan586/Nexora-AI-Agentic-AI-Commerce-Intelligence-Platform/issues) · [Author](https://github.com/MuhammadAdnan586)
 
 </div>
 
@@ -41,15 +42,33 @@ Built as a full production-style system — not a notebook demo — with a FastA
 
 ## 🖼️ Preview
 
-<!-- Add your screenshots here — see suggestions below -->
 <div align="center">
-  <img src="./docs/screenshots/admin-dashboard.png" width="90%" alt="Admin Dashboard" />
-  <br/><br/>
-  <img src="./docs/screenshots/agent-actions.png" width="45%" alt="Multi-Agent Action Confirmation" />
-  <img src="./docs/screenshots/voice-widget.png" width="45%" alt="Voice AI Shopping Widget" />
-</div>
 
-> *Screenshots: admin dashboard overview, multi-agent action confirmation (e.g. smart-ship / discount proposals), and the voice shopping widget. Place your images in `docs/screenshots/` with these filenames, or update the paths above.*
+**Admin Dashboard — Command Center**
+<img src="./admin-dashboard.png" width="90%" alt="NEXORA Admin Dashboard showing total revenue, orders, active products, and customers" />
+
+<br/>
+
+<table>
+<tr>
+<td width="35%" valign="top">
+
+**Full Feature Navigation**
+<img src="./feature-navigation.png" width="100%" alt="NEXORA sidebar showing Forecast, Weather, Stock Health, Pricing, Approvals, Campaigns, Copilot, Voice AI, Risk & Fraud, and Warehouse modules" />
+
+</td>
+<td width="65%" valign="top">
+
+**Voice AI Agent — Action Confirmation**
+<img src="./voice-agent-actions.png" width="100%" alt="Voice AI agent recommending and confirming a multi-warehouse shipment split for an order" />
+
+*The agent reasons about stock across warehouses, proposes a fulfillment plan, and waits for explicit confirmation before executing — no silent actions.*
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ---
 
