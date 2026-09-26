@@ -73,7 +73,9 @@ Built as a full production-style system — not a notebook demo — with a FastA
 ---
 
 ## 🏗️ Architecture & Tech Stack
-
+<div align="center">
+<img src="./Nexora Complete Structure Diagram.png" width="95%" alt="NEXORA complete architecture diagram showing client layer, API/backend layer, agent orchestration layer, data layer, and deployment/observability layer" />
+</div>
 **Backend**
 - FastAPI (Python) + SQLAlchemy + Alembic
 - **LangGraph** — multi-agent orchestration, stateful workflows
