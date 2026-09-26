@@ -10,7 +10,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](#)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](#)
 
-[Live Demo](#) · [Report Bug](https://github.com/MuhammadAdnan586/Nexora-AI-Agentic-AI-Commerce-Intelligence-Platform/issues) · [Author](https://github.com/MuhammadAdnan586)
+ · [Author](https://github.com/MuhammadAdnan586)
 
 </div>
 
